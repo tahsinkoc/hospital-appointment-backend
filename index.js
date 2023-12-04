@@ -3,6 +3,8 @@ import mongoose from 'mongoose';
 import cors from 'cors';
 import jwt from 'jsonwebtoken'
 import User from './schemas/UserScheme.js';
+import Encrypt from './comps/Cryptor.js';
+
 
 const app = express();
 
@@ -68,6 +70,7 @@ app.get('/secured', (req, res, next) => {
 
 app.post('/register', (req, res) => {
     const body = req.body;
+    body.password = Encrypt(body.password)
     body.role = 'client';
     body.department = 'client';
     const newUser = new User(body);
@@ -83,7 +86,7 @@ app.post('/login', async (req, res) => {
             $ne: 'doctor'
         },
         username: body.username,
-        password: body.password
+        password: Encrypt(body.password)
     });
     if (check) {
         const token = jwt.sign({ id: check['_id'], name: check.name, username: check.username, role: check.role, department: check.department, phoneNumber: check.phoneNumber },

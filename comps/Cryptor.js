@@ -1,10 +1,6 @@
-class Crypt {
-    Key = 'a1b9c961-b14a-4ed7-8724-70a36d3146bb'
-    constructor(pass) {
-        this.toCrypt = pass;
-    }
+import crypto from 'crypto'
 
-    Encrypt() {
-
-    }
+export default function Encrypt(text) {
+    const hash = crypto.createHash('md5').update(text).digest('hex');
+    return hash;
 }
