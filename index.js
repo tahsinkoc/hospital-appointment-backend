@@ -1,0 +1,101 @@
+import express from 'express';
+import mongoose from 'mongoose';
+import cors from 'cors';
+import jwt from 'jsonwebtoken'
+import User from './schemas/UserScheme.js';
+
+const app = express();
+
+const mongoURI = 'mongodb://localhost:27017/Learning';
+mongoose.connect(mongoURI, { useNewUrlParser: true, useUnifiedTopology: true })
+    .then(() => console.log('MongoDB bağlantısı başarılı'))
+    .catch(err => console.error('MongoDB bağlantı hatası', err));
+
+app.use(express.json())
+app.use(express.urlencoded({ extended: true }));
+app.use(cors())
+
+const KEY = 'a1b9c961-b14a-4ed7-8724-70a36d3146bb';
+
+const AuthenticateToken = (req, res, next, acceptableRoles) => {
+
+    const token = req.header("Auth");
+
+    if (!token) {
+        console.log(token)
+        return res.status(401).send({ message: 'Acces denied. Token is required' });
+    }
+    console.log(token)
+    jwt.verify(token, KEY, (err, decoded) => {
+        if (err) {
+            return res.status(403).send({ message: 'Invalid Token.' });
+        } else {
+            const RoleCheck = acceptableRoles.find((item) => item == decoded.role);
+            if (!RoleCheck) {
+                return res.status(403).send({ message: 'You don`t have a permision to acces here.' });
+            }
+            req.user = decoded;
+            next();
+        }
+    })
+
+}
+
+
+app.get('/users/:role', async (req, res) => {
+    const role = req.params.role
+    const usr = await User.find({
+        role: {
+            $ne: 'superuser1-*0',
+            $eq: role
+        }
+    }, { password: 0 })
+    res.json(usr)
+})
+
+app.get('/users', async (req, res) => {
+    const usr = await User.find({ role: { $ne: 'superuser1-*0' } }, { password: 0 })
+    res.json(usr)
+})
+
+app.get('/secured', (req, res, next) => {
+    AuthenticateToken(req, res, next, ['doctor', 'superuser1-*0']);
+}, async (req, res) => {
+    const usr = await User.find({ role: { $ne: 'superuser1-*0' } })
+    res.json(usr)
+})
+
+
+app.post('/register', (req, res) => {
+    const body = req.body;
+    body.role = 'client';
+    body.department = 'client';
+    const newUser = new User(body);
+    newUser.save();
+    res.status(200).send(newUser);
+})
+
+app.post('/login', async (req, res) => {
+    const body = req.body;
+    const check = await User.findOne({
+        role: {
+            $ne: 'superuser1-*0',
+            $ne: 'doctor'
+        },
+        username: body.username,
+        password: body.password
+    });
+    if (check) {
+        const token = jwt.sign({ id: check['_id'], name: check.name, username: check.username, role: check.role, department: check.department, phoneNumber: check.phoneNumber },
+            KEY,
+            { expiresIn: '1h' });
+        res.status(200).send({ message: token })
+    } else {
+        res.status(402).send({ message: 'Wrong Username or Password' })
+    }
+})
+
+
+app.listen(4575, () => {
+    console.log('Server Deployed at ::4575::');
+})
