@@ -6,6 +6,7 @@ import User from './schemas/UserScheme.js';
 import Encrypt from './comps/Cryptor.js';
 import Unicity from './comps/Unicity.js';
 import AuthenticateToken from './comps/Authenticate.js'
+import Clinic from './schemas/ClinicScheme.js';
 
 const app = express();
 
@@ -26,9 +27,21 @@ const KEY = 'a1b9c961-b14a-4ed7-8724-70a36d3146bb';
 
 
 
+//Clinic Procces
 
-
-
+app.post('/create-clinic', async (req, res, next) => {
+    AuthenticateToken(req, res, next, ['superuser1-*0'])
+}, async (req, res) => {
+    const Clinics = await Clinic.findOne({ name: req.body.name })
+    if (Clinics) {
+        console.log(Clinics);
+        res.status(403).send({ message: 'Already there is a clinic with this name.' })
+    } else {
+        const clinic = new Clinic(req.body);
+        clinic.save();
+        res.status(200).send({ message: 'Succesfully created' })
+    }
+})
 
 
 
