@@ -7,6 +7,7 @@ import Encrypt from './comps/Cryptor.js';
 import Unicity from './comps/Unicity.js';
 import AuthenticateToken from './comps/Authenticate.js'
 import Clinic from './schemas/ClinicScheme.js';
+import Appointment from './schemas/AppointmentScheme.js';
 
 const app = express();
 
@@ -24,6 +25,21 @@ app.use(cors())
 const KEY = 'a1b9c961-b14a-4ed7-8724-70a36d3146bb';
 
 
+// Appointment Procces
+
+app.post('/create-appointment', (req, res, next) => {
+    AuthenticateToken(req, res, next, ['client'])
+}, async (req, res) => {
+    const AvailableAppointments = await Appointment.countDocuments({ 'Doctor._id': req.body.Doctor['_id'], Date: req.body.Date })
+    console.log(AvailableAppointments);
+    if (AvailableAppointments < 1) {
+        const NewAppointment = new Appointment(req.body);
+        NewAppointment.save()
+        res.status(200).send({ message: 'Appointment succesfully saved.' })
+    } else {
+        res.status(403).send({ message: 'We are sorry, we are out of capacity.' })
+    }
+})
 
 
 
@@ -34,7 +50,6 @@ app.post('/create-clinic', async (req, res, next) => {
 }, async (req, res) => {
     const Clinics = await Clinic.findOne({ name: req.body.name })
     if (Clinics) {
-        console.log(Clinics);
         res.status(403).send({ message: 'Already there is a clinic with this name.' })
     } else {
         const clinic = new Clinic(req.body);
@@ -63,6 +78,15 @@ app.post('/create-doctor', (req, res, next) => {
     res.status(200).send({ message: 'Succesfully created.' });
 })
 
+
+app.get('/doctors/:department/', async (req, res) => {
+    const department = req.params.department;
+    const doctors = await User.find({
+        role: 'doctor',
+        department: department
+    }, { password: 0 })
+    res.status(200).send({ message: doctors })
+})
 
 app.get('/users/:role', async (req, res) => {
     const role = req.params.role
