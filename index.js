@@ -31,7 +31,6 @@ app.post('/create-appointment', (req, res, next) => {
     AuthenticateToken(req, res, next, ['client'])
 }, async (req, res) => {
     const AvailableAppointments = await Appointment.countDocuments({ 'Doctor._id': req.body.Doctor['_id'], Date: req.body.Date })
-    console.log(AvailableAppointments);
     if (AvailableAppointments < 1) {
         const NewAppointment = new Appointment(req.body);
         NewAppointment.save()
