@@ -12,7 +12,7 @@ import Appointment from './schemas/AppointmentScheme.js';
 const app = express();
 
 const mongoURI = 'mongodb://localhost:27017/Learning';
-mongoose.connect(mongoURI, { useNewUrlParser: true, useUnifiedTopology: true })
+mongoose.connect(mongoURI)
     .then(() => console.log('MongoDB bağlantısı başarılı'))
     .catch(err => console.error('MongoDB bağlantı hatası', err));
 
@@ -113,7 +113,10 @@ app.get('/secured', (req, res, next) => {
 })
 
 
-app.post('/register', (req, res) => {
+app.post('/register', (req, res, next) => {
+    Unicity(User, req.body.username, res, next);
+
+}, (req, res) => {
     const body = req.body;
     body.password = Encrypt(body.password)
     body.role = 'client';
