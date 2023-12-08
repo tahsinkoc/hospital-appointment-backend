@@ -155,9 +155,9 @@ app.post('/login', async (req, res) => {
         const token = jwt.sign({ id: check['_id'], name: check.name, username: check.username, role: check.role, department: check.department, phoneNumber: check.phoneNumber },
             KEY,
             { expiresIn: '1h' });
-        res.status(200).send({ message: token })
+        res.status(200).send({ message: token, status: 200 })
     } else {
-        res.status(402).send({ message: 'Wrong Username or Password' })
+        res.status(401).send({ message: 'Wrong Username or Password', status: 401 })
     }
 })
 
