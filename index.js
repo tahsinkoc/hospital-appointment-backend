@@ -62,6 +62,18 @@ app.post('/create-clinic', async (req, res, next) => {
 
 // User Procces
 
+app.post('/delete-user', (req, res, next) => {
+    AuthenticateToken(req, res, next, ['superuser1-*0']);
+}, async (req, res) => {
+    const body = req.body;
+    const UserForDelete = await User.deleteOne({ _id: body.id });
+    if (UserForDelete) {
+        res.send({ status: 200, message: 'Succesfully Deleted' });
+    } else {
+        res.send({ status: 404, message: 'User couldn`t find.' })
+    }
+})
+
 
 app.post('/create-doctor', (req, res, next) => {
     AuthenticateToken(req, res, next, ['superuser1-*0']);
@@ -74,7 +86,7 @@ app.post('/create-doctor', (req, res, next) => {
     body.password = Encrypt(body.password);
     const Doctor = new User(body);
     Doctor.save();
-    res.status(200).send({ message: 'Succesfully created.' });
+    res.status(200).send({ message: 'Succesfully created.', status: 200 });
 })
 
 
