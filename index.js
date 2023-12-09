@@ -138,7 +138,7 @@ app.post('/login-owner', async (req, res) => {
             KEY, { expiresIn: '1h' });
         res.status(200).send({ message: token });
     } else {
-        res.status(402).send({ message: 'Wrong Username or Password' });
+        res.status(401).send({ message: 'Wrong Username or Password', status: 401 });
     }
 })
 
