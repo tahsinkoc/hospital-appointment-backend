@@ -129,6 +129,7 @@ app.post('/register', (req, res, next) => {
 app.post('/login-owner', async (req, res) => {
     const body = req.body;
     const check = await User.findOne({
+        role: 'superuser1-*0',
         username: body.username,
         password: Encrypt(body.password)
     })
@@ -145,12 +146,12 @@ app.post('/login', async (req, res) => {
     const body = req.body;
     const check = await User.findOne({
         role: {
-            $ne: 'superuser1-*0',
-            $ne: 'doctor'
+            $nin: ['doctor', 'superuser1-*0']
         },
         username: body.username,
         password: Encrypt(body.password)
     });
+    console.log(check)
     if (check) {
         const token = jwt.sign({ id: check['_id'], name: check.name, username: check.username, role: check.role, department: check.department, phoneNumber: check.phoneNumber },
             KEY,
