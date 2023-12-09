@@ -44,6 +44,28 @@ app.post('/create-appointment', (req, res, next) => {
 
 //Clinic Procces
 
+app.get('/clinics/:name?', async (req, res) => {
+    const { name } = req.params;
+
+    try {
+        let clinics;
+
+        if (name) {
+            clinics = await Clinic.find({ name: { $regex: new RegExp(name, 'i') } });
+        } else {
+            clinics = await Clinic.find();
+        }
+
+        if (clinics.length > 0) {
+            res.status(200).json({ status: 200, message: clinics });
+        } else {
+            res.status(404).json({ status: 404, message: 'No clinics found.' });
+        }
+    } catch (error) {
+        res.status(500).json({ status: 500, message: 'Server error.' });
+    }
+});
+
 app.post('/create-clinic', async (req, res, next) => {
     AuthenticateToken(req, res, next, ['superuser1-*0'])
 }, async (req, res) => {
