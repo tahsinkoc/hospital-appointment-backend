@@ -71,15 +71,25 @@ app.post('/create-clinic', async (req, res, next) => {
 }, async (req, res) => {
     const Clinics = await Clinic.findOne({ name: req.body.name })
     if (Clinics) {
-        res.status(403).send({ message: 'Already there is a clinic with this name.' })
+        res.status(403).send({ message: 'Already there is a clinic with this name.', status: 403 })
     } else {
         const clinic = new Clinic(req.body);
         clinic.save();
-        res.status(200).send({ message: 'Succesfully created' })
+        res.status(200).send({ message: 'Succesfully created', status: 200 })
     }
 })
 
-
+app.post('/delete-clinic', async (req, res, next) => {
+    AuthenticateToken(req, res, next, ['superuser1-*0'])
+}, async (req, res) => {
+    const body = req.body;
+    const ClinicForDelete = await Clinic.deleteOne({ _id: body.id });
+    if (ClinicForDelete) {
+        res.send({ status: 200, message: 'Succesfully Deleted' });
+    } else {
+        res.send({ status: 404, message: 'User couldn`t find.' })
+    }
+})
 
 
 // User Procces
