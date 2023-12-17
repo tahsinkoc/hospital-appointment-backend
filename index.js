@@ -142,6 +142,21 @@ app.get('/users/:role', async (req, res) => {
     res.json(usr)
 })
 
+app.post('/update-user', async (req, res, next) => {
+    AuthenticateToken(req, res, next, ['superuser1-*0'])
+}, async (req, res, next) => {
+    const userForUpdate = await User.findOne({ _id: req.body.id })
+    if (userForUpdate) {
+        userForUpdate.name = req.body.name;
+        userForUpdate.surname = req.body.surname;
+        userForUpdate.username = req.body.username;
+        userForUpdate.phoneNumber = req.body.phoneNumber;
+        userForUpdate.save()
+        res.send({ status: 200, message: 'Başarıyla güncellendi.' })
+    } else {
+        res.send({ status: 404, message: 'Kullanıcı bulunamad.' })
+    }
+})
 
 app.get('/users', async (req, res) => {
     const usr = await User.find({ role: { $ne: 'superuser1-*0' } }, { password: 0 })
