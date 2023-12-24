@@ -34,12 +34,22 @@ app.post('/create-appointment', (req, res, next) => {
     if (AvailableAppointments < 1) {
         const NewAppointment = new Appointment(req.body);
         NewAppointment.save()
-        res.status(200).send({ message: 'Appointment succesfully saved.' })
+        res.status(200).send({ message: 'Randevunuz başarılı bir şekilde kaydedildi.', status: 200 })
     } else {
-        res.status(403).send({ message: 'We are sorry, we are out of capacity.' })
+        res.status(403).send({ message: 'Üzgünüz seçmiş olduğunuz tarih için doktorumuz müsait değil.', status: 403 })
     }
 })
 
+app.get('/get-appointment/:userid?', async (req, res, next) => {
+    const { userid } = req.params;
+    if (userid) {
+        const appos = await Appointment.find({ 'Client.id': userid })
+        res.send({ status: 200, message: appos })
+    } else {
+        const appos = await Appointment.find();
+        res.send({ status: 200, message: appos })
+    }
+})
 
 
 //Clinic Procces
