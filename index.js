@@ -51,7 +51,21 @@ app.get('/get-appointment/:userid?', async (req, res, next) => {
     }
 })
 
-
+app.get('/get-appointment/:doctorid/:date?', async (req, res, next) => {
+    const { doctorid, date } = req.params;
+    if (date) {
+        const appos = await Appointment.find({ 'Doctor._id': doctorid, Date: date })
+        res.send({ status: 200, message: appos })
+    } else {
+        const appos = await Appointment.find({ 'Doctor._id': doctorid })
+        res.send({ status: 200, message: appos })
+    }
+})
+app.get('/get-appointments/:doctorid', async (req, res, next) => {
+    const { doctorid } = req.params;
+    const appos = await Appointment.find({ 'Doctor._id': doctorid })
+    res.send({ status: 200, message: appos })
+})
 //Clinic Procces
 
 app.get('/clinics/:name?', async (req, res) => {
@@ -208,6 +222,26 @@ app.post('/login-owner', async (req, res) => {
         res.status(200).send({ message: token });
     } else {
         res.status(401).send({ message: 'Wrong Username or Password', status: 401 });
+    }
+})
+
+app.post('/login-doctor', async (req, res) => {
+    const body = req.body;
+    const check = await User.findOne({
+        role: {
+            $nin: ['client', 'superuser1-*0']
+        },
+        username: body.username,
+        password: Encrypt(body.password)
+    });
+    console.log(check)
+    if (check) {
+        const token = jwt.sign({ id: check['_id'], name: check.name, username: check.username, role: check.role, department: check.department, phoneNumber: check.phoneNumber },
+            KEY,
+            { expiresIn: '1h' });
+        res.status(200).send({ message: token, status: 200 })
+    } else {
+        res.status(401).send({ message: 'Wrong Username or Password', status: 401 })
     }
 })
 
